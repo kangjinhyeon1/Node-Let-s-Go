@@ -6,10 +6,12 @@ const { configDotenv } = require('dotenv');
 configDotenv();
 
 const validatorAccess = async (req, res, next) => {
-    const authorization = req.header.authorization?.split(' ')[1];
+    const authorization = req.rawHeaders[1].split(' ')[1];
+    console.log(req.rawHeaders[1]);
+    console.log(authorization);
     if (!authorization || !isJWT(authorization)) {
         return res.status(401).json({
-            "error": "에러남"
+            "error": "에러남123"
         })
     }
 
@@ -18,7 +20,7 @@ const validatorAccess = async (req, res, next) => {
     req.payload = jwt.verify(authorization,
         salt,
         {
-            algorithms: 'SHA256',
+            algorithms: 'HS256',
             complete: true
         }
     )

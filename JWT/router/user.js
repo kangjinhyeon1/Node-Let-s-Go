@@ -1,6 +1,6 @@
 const router = require('express')();
 const user = require('../controller/user');
-const { validatorAccess } = require('../middleware/jwt');
+const validatorAccess = require('../middleware/jwt');
 
 
 router.post('/signup', user.signUp);
