@@ -35,4 +35,21 @@ const signUp = async (req, res) => {
     })
 }
 
-module.exports = { signUp };
+const mypage = async (req, res) => {
+    try {
+        const { id } = req.payload;
+
+        const thisUser = await User.findOne({ where: { id } });
+
+        return res.status(200).json({
+            name: thisUser.name,
+            email: thisUser.email,
+            birth: thisUser.birth,
+        });
+    } catch (e) {
+        console.error(e);
+        return e;
+    }
+}
+
+module.exports = { signUp, mypage };
