@@ -1,5 +1,5 @@
 const validator = require('validator');
-const { User } = require('../model');
+const { User, Email } = require('../model');
 const bcrypt = require('bcrypt');
 
 const signUp = async (req, res) => {
@@ -35,11 +35,40 @@ const signUp = async (req, res) => {
     })
 }
 
+const validate = async (req, res) => {
+    try {
+        const { verify, email } = req.body;
+
+        const thisVerify = await Email.findOne({ where: { email } });
+        if (!thisVerify || !verify) {
+            return res.status(404).json({
+                "error": "인증코드없음"
+            })
+        }
+        if (thisVerify.key != verify) {
+            return res.status(409).json({
+                "error": "인증코드 불일치"
+            })
+        }
+
+        await thisVerify.update({
+            key: "true"
+        })
+
+        return res.status(200).json({
+            message: "인증이 완료되었습니다."
+        })
+    } catch (e) {
+        console.error(e);
+        return e;
+    }
+}
+
 const mypage = async (req, res) => {
     try {
         const { id } = req.payload;
 
-        const thisUser = await User.findOne({ where: { id } });
+        const thisUser = await User.findOne({ where: { userId: id } });
 
         return res.status(200).json({
             name: thisUser.name,
@@ -52,4 +81,85 @@ const mypage = async (req, res) => {
     }
 }
 
-module.exports = { signUp, mypage };
+const info = async (req, res) => {
+    try {
+        const { id } = req.payload;
+        const { name, birth } = req.body;
+
+        const thisUser = await User.findOne({ where: { userId: id } })
+
+        if (!thisUser) {
+            return res.status(404).json({
+                "error": "404에러남",
+            })
+        }
+
+        const update = await thisUser.update({
+            name,
+            birth
+        })
+
+        return res.status(200).json({
+            user: update,
+        })
+
+    } catch (e) {
+        console.error(e);
+        return e;
+    }
+}
+
+const password = async (req, res) => {
+    try {
+        const { id } = req.payload;
+        // const { password } = req.body;
+        const { newPassword } = req.body;
+
+        const thisUser = await User.findOne({ where: { userId: id } })
+
+        // 현재 비밀번호 확인
+        // if (!await bcrypt.compare(password, thisUser.password)) {
+        //     return res.status(409).json({
+        //         "error": "409에러남 비밀번호 확인",
+        //     })
+        // }
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+
+        await thisUser.update({
+            password: hashed
+        })
+
+        return res.status(200).json({
+            "sucess": "비밀번호가 변경되었습니다.",
+        })
+    } catch (e) {
+        console.error(e);
+        return e;
+    }
+}
+
+const delacc = async (req, res) => {
+    try {
+        const { id } = req.payload;
+        const { password } = req.body;
+
+        const thisUser = await User.findOne({ where: { userId: id } })
+
+        if (!await bcrypt.compare(password, thisUser.password)) {
+            return res.status(409).json({
+                "error": "409에러남 비밀번호 확인",
+            })
+        }
+
+        await thisUser.destroy();
+
+        return res.status(204).json()
+
+    } catch (e) {
+        console.error(e);
+        return e;
+    }
+}
+
+module.exports = { signUp, mypage, info, password, delacc, validate };

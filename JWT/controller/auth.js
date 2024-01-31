@@ -15,7 +15,7 @@ const signIn = async (req, res) => {
             "error": "인증안됨"
         })
 
-        return res.status(201).json({ "accesstoken": await generateAccessToken(thisUser) });
+        return res.status(201).json({ accesstoken: await generateAccessToken(thisUser.userId) });
     } catch (e) {
         console.error(e);
         return e;
@@ -23,18 +23,17 @@ const signIn = async (req, res) => {
 }
 
 const generateAccessToken = (id) => {
-    const salt = bcrypt.genSaltSync(Number(process.env.SECRET_KEY));
 
     const AccessToken = jwt.sign({
         id
-    }, salt,
+    }, process.env.SECRET_KEY,
         {
             algorithm: 'HS256',
-            expiresIn: '1m',
+            expiresIn: '10m',
         }
     )
 
     return AccessToken;
 }
 
-module.exports = { signIn };
+module.exports = { signIn, generateAccessToken };

@@ -1,8 +1,11 @@
 const router = require('express')();
 const auth = require('../controller/auth');
-const { validatorAccess } = require('../middleware/jwt');
+const { validate } = require('../controller/user');
+const { validateWitMail } = require('../middleware/jwt');
 
 router.post('/signin', auth.signIn);
-router.get('/refresh',);
+router.post('/send', validateWitMail);
+router.post('/check', validate);
+// router.get('/refresh');
 
 module.exports = router;
