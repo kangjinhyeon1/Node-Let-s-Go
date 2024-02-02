@@ -70,6 +70,12 @@ const mypage = async (req, res) => {
 
         const thisUser = await User.findOne({ where: { userId: id } });
 
+        if (!thisUser) {
+            return res.status(404).json({
+                "error": "정보 찾을 수 없음"
+            });
+        }
+
         return res.status(200).json({
             name: thisUser.name,
             email: thisUser.email,

@@ -7,20 +7,26 @@ const { createTransport } = require('nodemailer');
 configDotenv();
 
 const validateAccess = async (req, res, next) => {
-    const authorization = req.get('authorization').split(' ')[1]; // Bearer {token}
-    if (!authorization || !isJWT(authorization)) {
-        return res.status(401).json({
-            "error": "JWT 유효성 검증 실패"
-        })
+    try {
+        const authorization = req.get('authorization').split(' ')[1]; // Bearer {token}
+        if (!authorization || !isJWT(authorization)) {
+            return res.status(401).json({
+                "error": "JWT 유효성 검증 실패"
+            })
+        }
+
+        req.payload = jwt.verify(authorization,
+            process.env.SECRET_KEY,
+            {
+                algorithms: 'HS256',
+            })
+
+        next();
     }
-
-    req.payload = jwt.verify(authorization,
-        process.env.SECRET_KEY,
-        {
-            algorithms: 'HS256',
-        })
-
-    next();
+    catch (err) {
+        console.error(err);
+        return err;
+    }
 }
 
 const validateWitMail = async (req, res) => {

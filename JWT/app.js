@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-
 const router = require('./router/index');
 const { sequelize } = require('./model');
+const { redisCli } = require('./redis');
 
 dotenv.configDotenv();
 const port = process.env.PORT || 8000
@@ -21,8 +21,10 @@ app.use(cors({
 
 app.use('/', router);
 
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`Server has inited on ${port}!`);
+
+    await redisCli.connect()
 
     sequelize.sync({ force: false })
         .then(() => {
